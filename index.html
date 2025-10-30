@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Station User Management</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>User Management</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -24,4 +24,279 @@
 
           const [users, setUsers] = useState([
             { id: 1, name: 'John Smith', email: 'john@wabc.com', role: 'Editor', stationId: 'station-a', active: true },
-            { id: 2, name: 'Sarah J
+            { id: 2, name: 'Sarah Johnson', email: 'sarah@wabc.com', role: 'Producer', stationId: 'station-a', active: true },
+            { id: 3, name: 'Mike Chen', email: 'mike@kxyz.com', role: 'Admin', stationId: 'station-b', active: true },
+            { id: 4, name: 'Lisa Brown', email: 'lisa@kxyz.com', role: 'Reporter', stationId: 'station-b', active: false },
+            { id: 5, name: 'David Wilson', email: 'david@wdef.com', role: 'Editor', stationId: 'station-c', active: true }
+          ]);
+
+          const [searchTerm, setSearchTerm] = useState('');
+          const [filterStation, setFilterStation] = useState('all');
+          const [showModal, setShowModal] = useState(false);
+          const [editingUser, setEditingUser] = useState(null);
+          const [formData, setFormData] = useState({
+            name: '',
+            email: '',
+            role: 'Reporter',
+            stationId: '',
+            active: true
+          });
+
+          const roles = ['Admin', 'Editor', 'Producer', 'Reporter', 'Viewer'];
+
+          const filteredUsers = users.filter(user => {
+            const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 user.email.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStation = filterStation === 'all' || user.stationId === filterStation;
+            return matchesSearch && matchesStation;
+          });
+
+          const getStationName = (stationId) => {
+            const station = stations.find(s => s.id === stationId);
+            return station ? station.name : 'Unknown';
+          };
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            if (editingUser) {
+              setUsers(users.map(u => u.id === editingUser.id ? { ...formData, id: u.id } : u));
+            } else {
+              setUsers([...users, { ...formData, id: Date.now() }]);
+            }
+            handleCloseModal();
+          };
+
+          const handleEdit = (user) => {
+            setEditingUser(user);
+            setFormData(user);
+            setShowModal(true);
+          };
+
+          const handleDelete = (userId) => {
+            const user = users.find(u => u.id === userId);
+            if (window.confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
+              setUsers(users.filter(u => u.id !== userId));
+            }
+          };
+
+          const handleCloseModal = () => {
+            setShowModal(false);
+            setEditingUser(null);
+            setFormData({ name: '', email: '', role: 'Reporter', stationId: '', active: true });
+          };
+
+          const toggleActiveStatus = (userId) => {
+            setUsers(users.map(u => u.id === userId ? { ...u, active: !u.active } : u));
+          };
+
+          return (
+            <div className="min-h-screen bg-gray-50 p-8">
+              <div className="max-w-7xl mx-auto">
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+                      <p className="text-gray-600 mt-1">Manage users across multiple news stations</p>
+                    </div>
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      <span className="text-xl">+</span>
+                      Add User
+                    </button>
+                  </div>
+
+                  <div className="flex gap-4 mb-6 flex-wrap">
+                    <div className="flex-1 min-w-[200px] relative">
+                      <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <select
+                      value={filterStation}
+                      onChange={(e) => setFilterStation(e.target.value)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">All Stations</option>
+                      {stations.map(station => (
+                        <option key={station.id} value={station.id}>{station.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredUsers.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                              No users found
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredUsers.map(user => (
+                            <tr key={user.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="font-medium text-gray-900">{user.name}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600">{user.email}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                  {user.role}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-gray-600">{getStationName(user.stationId)}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <button
+                                  onClick={() => toggleActiveStatus(user.id)}
+                                  className={`px-3 py-1 text-xs font-semibold rounded-full transition ${
+                                    user.active
+                                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {user.active ? 'Active' : 'Inactive'}
+                                </button>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => handleEdit(user)}
+                                    className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded transition"
+                                    title="Edit user"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(user.id)}
+                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition"
+                                    title="Delete user"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {showModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-md w-full p-6">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        {editingUser ? 'Edit User' : 'Add New User'}
+                      </h2>
+                      <form onSubmit={handleSubmit}>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.name}
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="John Doe"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <input
+                              type="email"
+                              required
+                              value={formData.email}
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="john@station.com"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                            <select
+                              required
+                              value={formData.role}
+                              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              {roles.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Station *</label>
+                            <select
+                              required
+                              value={formData.stationId}
+                              onChange={(e) => setFormData({ ...formData, stationId: e.target.value })}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="">Select a station</option>
+                              {stations.map(station => (
+                                <option key={station.id} value={station.id}>
+                                  {station.name} - {station.location}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id="active"
+                              checked={formData.active}
+                              onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
+                              Active User
+                            </label>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                          <button
+                            type="button"
+                            onClick={handleCloseModal}
+                            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                          >
+                            {editingUser ? 'Update' : 'Add'} User
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<UserManagementApp />);
+    </script>
+</body>
+</html>
