@@ -298,15 +298,13 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<UserManagementApp />);
     </script>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+    <script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+  // Your Firebase config
+  const firebaseConfig = {
   apiKey: "AIzaSyCpd8XaBnodlwdFg1STLGyj4uBFXjcM8uA",
   authDomain: "troy-test-project-20d30.firebaseapp.com",
   projectId: "troy-test-project-20d30",
@@ -314,10 +312,86 @@ const firebaseConfig = {
   messagingSenderId: "125818558231",
   appId: "1:125818558231:web:3fd3ad660176e175380952",
   measurementId: "G-VBG4XVVXM1"
-};
+  };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);    
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Load users when page loads
+  async function loadUsers() {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    const userList = document.getElementById('userList');
+    userList.innerHTML = '';
+    
+    querySnapshot.forEach((doc) => {
+      const user = doc.data();
+      addUserToDOM(user.name, user.email, doc.id);
+    });
+  }
+
+  // Add user to Firebase
+  async function addUser(name, email) {
+    try {
+      const docRef = await addDoc(collection(db, "users"), {
+        name: name,
+        email: email,
+        createdAt: new Date()
+      });
+      console.log("User added with ID: ", docRef.id);
+      return docRef.id;
+    } catch (e) {
+      console.error("Error adding user: ", e);
+    }
+  }
+
+  // Delete user from Firebase
+  async function deleteUser(userId) {
+    await deleteDoc(doc(db, "users", userId));
+  }
+
+  // Update user in Firebase
+  async function updateUser(userId, name, email) {
+    await updateDoc(doc(db, "users", userId), {
+      name: name,
+      email: email
+    });
+  }
+
+  // Add user to DOM
+  function addUserToDOM(name, email, id) {
+    const userList = document.getElementById('userList');
+    const userDiv = document.createElement('div');
+    userDiv.className = 'user-item';
+    userDiv.innerHTML = `
+      <span><strong>${name}</strong> - ${email}</span>
+      <button onclick="removeUser('${id}', this)">Delete</button>
+    `;
+    userList.appendChild(userDiv);
+  }
+
+  // Handle form submission
+  document.getElementById('userForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('userName').value;
+    const email = document.getElementById('userEmail').value;
+    
+    const userId = await addUser(name, email);
+    addUserToDOM(name, email, userId);
+    
+    // Clear form
+    document.getElementById('userName').value = '';
+    document.getElementById('userEmail').value = '';
+  });
+
+  // Delete user function
+  window.removeUser = async function(userId, button) {
+    await deleteUser(userId);
+    button.parentElement.remove();
+  }
+
+  // Load users when page loads
+  loadUsers();
+</script>
 </body>
 </html>
