@@ -240,7 +240,7 @@ const firebaseConfig = {
                 userList.innerHTML = '';
                 querySnapshot.forEach((doc) => {
                     const user = doc.data();
-addUserToDOM(user.name, user.email, user.location, doc.id);
+addUserToDOM(user.name, user.email, user.location || 'Not Set', doc.id);
                 });
             } catch (error) {
                 console.error("Error loading users:", error);
