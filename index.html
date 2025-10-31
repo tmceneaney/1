@@ -166,6 +166,23 @@ button {
             padding: 40px;
             font-style: italic;
         }
+        .filter-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.filter-section label {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+.filter-section select {
+    width: auto;
+    min-width: 200px;
+}
     </style>
 </head>
 <body>
@@ -199,6 +216,16 @@ button {
 
         <div class="users-section">
             <h2>Users List</h2>
+            <div class="filter-section">
+    <label for="locationFilter">Filter by Location:</label>
+    <select id="locationFilter">
+        <option value="all">All Locations</option>
+        <option value="north">North</option>
+        <option value="south">South</option>
+        <option value="east">East</option>
+        <option value="west">West</option>
+    </select>
+</div>
             <div id="userList">
                 <div class="loading">Loading users...</div>
             </div>
@@ -247,6 +274,21 @@ addUserToDOM(user.name, user.email, user.location || 'Not Set', doc.id);
                 userList.innerHTML = '<div class="empty-state">Error loading users. Check console.</div>';
             }
         }
+        // Filter users by location
+function filterUsers(selectedLocation) {
+    const allUsers = document.querySelectorAll('.user-item');
+    
+    allUsers.forEach(user => {
+        const locationText = user.querySelector('.user-location').textContent;
+        const userLocation = locationText.replace('📍 ', '').toLowerCase().trim();
+        
+        if (selectedLocation === 'all' || userLocation === selectedLocation) {
+            user.style.display = 'flex';
+        } else {
+            user.style.display = 'none';
+        }
+    });
+}
 
         // Add user to Firebase
 async function addUser(name, email, location) {
@@ -322,7 +364,10 @@ document.getElementById('userForm').addEventListener('submit', async function(e)
         document.getElementById('userLocation').value = '';
     }
 });
-                
+// Handle location filter
+document.getElementById('locationFilter').addEventListener('change', function(e) {
+    filterUsers(e.target.value);
+});
 
 // Delete user function (global)
 window.removeUser = async function(userId) {
