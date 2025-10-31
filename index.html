@@ -332,22 +332,22 @@ document.getElementById('userForm').addEventListener('submit', async function(e)
             }
         });
 
-        // Delete user function (global)
-        window.removeUser = async function(userId) {
-            if (confirm('Are you sure you want to delete this user?')) {
-                await deleteUser(userId);
-                const userDiv = document.querySelector(`[data-id="${userId}"]`);
-                if (userDiv) {
-                    userDiv.remove();
-                }
-                
-                // Show empty state if no users left
-                const userList = document.getElementById('userList');
-                if (userList.children.length === 0) {
-                    userList.innerHTML = '<div class="empty-state">No users yet. Add one above!</div>';
-                }
-            }
+// Delete user function (global)
+window.removeUser = async function(userId) {
+    if (confirm('Are you sure you want to delete this user?')) {
+        await deleteUser(userId);
+        const userDiv = document.querySelector(`[data-id="${userId}"]`);
+        if (userDiv) {
+            userDiv.remove();
         }
+        
+        // Show empty state if no users left
+        const userList = document.getElementById('userList');
+        if (userList.children.length === 0) {
+            userList.innerHTML = '<div class="empty-state">No users yet. Add one above!</div>';
+        }
+    }
+}
 
 // Load users when page loads
         console.log("🚀 Firebase initialized");
