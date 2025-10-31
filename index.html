@@ -70,7 +70,22 @@ input {
             outline: none;
             border-color: #667eea;
         }
+select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: 'Quicksand', sans-serif;
+    transition: border-color 0.3s;
+    background: white;
+    cursor: pointer;
+}
 
+select:focus {
+    outline: none;
+    border-color: #667eea;
+}
 button {
     width: 100%;
     padding: 12px;
@@ -168,6 +183,16 @@ button {
                     <label for="userEmail">Email</label>
                     <input type="email" id="userEmail" placeholder="Enter user email" required>
                 </div>
+                <div class="form-group">
+    <label for="userLocation">Location</label>
+    <select id="userLocation" required>
+        <option value="">Select a location...</option>
+        <option value="north">North</option>
+        <option value="south">South</option>
+        <option value="east">East</option>
+        <option value="west">West</option>
+    </select>
+</div>
                 <button type="submit">Add User</button>
             </form>
         </div>
@@ -215,7 +240,7 @@ const firebaseConfig = {
                 userList.innerHTML = '';
                 querySnapshot.forEach((doc) => {
                     const user = doc.data();
-                    addUserToDOM(user.name, user.email, doc.id);
+addUserToDOM(user.name, user.email, user.location, doc.id);
                 });
             } catch (error) {
                 console.error("Error loading users:", error);
@@ -224,13 +249,14 @@ const firebaseConfig = {
         }
 
         // Add user to Firebase
-        async function addUser(name, email) {
-            try {
-                const docRef = await addDoc(collection(db, "users"), {
-                    name: name,
-                    email: email,
-                    createdAt: new Date()
-                });
+async function addUser(name, email, location) {
+    try {
+        const docRef = await addDoc(collection(db, "users"), {
+            name: name,
+            email: email,
+            location: location,
+            createdAt: new Date()
+        });
                 console.log("✅ User added with ID:", docRef.id);
                 return docRef.id;
             } catch (error) {
@@ -252,25 +278,16 @@ const firebaseConfig = {
         }
 
         // Add user to DOM
-        function addUserToDOM(name, email, id) {
-            const userList = document.getElementById('userList');
-            
-            // Remove empty state if it exists
-            const emptyState = userList.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-            
-            const userDiv = document.createElement('div');
-            userDiv.className = 'user-item';
-            userDiv.setAttribute('data-id', id);
-            userDiv.innerHTML = `
-                <div class="user-info">
-                    <div class="user-name">${name}</div>
-                    <div class="user-email">${email}</div>
-                </div>
-                <button class="delete-btn" onclick="removeUser('${id}')">Delete</button>
-            `;
+function addUserToDOM(name, email, location, id) {
+    // ... existing code ...
+    userDiv.innerHTML = `
+        <div class="user-info">
+            <div class="user-name">${name}</div>
+            <div class="user-email">${email}</div>
+            <div class="user-location" style="color: #888; font-size: 13px; margin-top: 2px;">📍 ${location.toUpperCase()}</div>
+        </div>
+        <button class="delete-btn" onclick="removeUser('${id}')">Delete</button>
+    `;
             userList.appendChild(userDiv);
         }
 
@@ -278,19 +295,19 @@ const firebaseConfig = {
         document.getElementById('userForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const name = document.getElementById('userName').value.trim();
-            const email = document.getElementById('userEmail').value.trim();
-            
-            if (!name || !email) return;
-            
-            const userId = await addUser(name, email);
-            
-            if (userId) {
-                addUserToDOM(name, email, userId);
+const name = document.getElementById('userName').value.trim();
+const email = document.getElementById('userEmail').value.trim();
+const location = document.getElementById('userLocation').value;
+
+if (!name || !email || !location) return;
+
+const userId = await addUser(name, email, location);
                 
                 // Clear form
                 document.getElementById('userName').value = '';
                 document.getElementById('userEmail').value = '';
+            document.getElementById('userLocation').value = '';
+
             }
         });
 
