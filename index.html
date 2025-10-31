@@ -280,14 +280,14 @@ async function addUser(name, email, location) {
         // Add user to DOM
 function addUserToDOM(name, email, location, id) {
     // ... existing code ...
-    userDiv.innerHTML = `
-        <div class="user-info">
-            <div class="user-name">${name}</div>
-            <div class="user-email">${email}</div>
-            <div class="user-location" style="color: #888; font-size: 13px; margin-top: 2px;">📍 ${location.toUpperCase()}</div>
-        </div>
-        <button class="delete-btn" onclick="removeUser('${id}')">Delete</button>
-    `;
+userDiv.innerHTML = `
+    <div class="user-info">
+        <div class="user-name">${name}</div>
+        <div class="user-email">${email}</div>
+        <div class="user-location" style="color: #888; font-size: 13px; margin-top: 2px;">📍 ${location ? location.toUpperCase() : 'NOT SET'}</div>
+    </div>
+    <button class="delete-btn" onclick="removeUser('${id}')">Delete</button>
+`;
             userList.appendChild(userDiv);
         }
 
